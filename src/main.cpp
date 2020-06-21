@@ -18,29 +18,33 @@ Servo mservo9;
 #define MIN_ANGLE 20
 
 int pos = MIN_ANGLE;
-bool stop = false;
+bool stop = true;
 int servo_delay = 45;
 
 void display(int value) {
     MFS.write(value);
 }
 
-void checkButtons(byte btn) {
+void checkButtons() {
 
+    byte btn = MFS.getButton();
     MFS.manualDisplayRefresh();
     MFS.isrCallBack();
 
     if (btn == BUTTON_1_PRESSED || btn == BUTTON_1_LONG_PRESSED) {
-        Serial.println("btn1");
+        Serial.print("==> btn stop: ");
         MFS.beep(3, 4, 3, 3); 
         stop = !stop;
+        Serial.println(stop);
         delay(100);
     } else if (btn == BUTTON_2_PRESSED || btn == BUTTON_2_LONG_PRESSED) {
-        Serial.println("btn2");
-        if (servo_delay < 255) servo_delay++;
-    } else if (btn == BUTTON_3_PRESSED || btn == BUTTON_3_LONG_PRESSED) {
-        Serial.println("btn3");
+        Serial.print("==> btn- delay: ");
         if (servo_delay > 0) servo_delay--;
+        Serial.println(servo_delay);
+    } else if (btn == BUTTON_3_PRESSED || btn == BUTTON_3_LONG_PRESSED) {
+        Serial.print("==> btn+ delay: ");
+        if (servo_delay < 255) servo_delay++;
+        Serial.println(servo_delay);
     }
     
     display(servo_delay);
@@ -51,9 +55,9 @@ void setup() {
     Serial.begin(115200);
     delay(10);
     Serial.println();
-    Serial.println("==============================");
-    Serial.println("====== SERVO MFS TEST  ======");
-    Serial.println("==============================");
+    Serial.println("================================");
+    Serial.println("====== SERVO MFS TESTER  =======");
+    Serial.println("================================");
 
     mservo6.attach(6);
     mservo9.attach(9);
@@ -61,8 +65,13 @@ void setup() {
     // Timer1.initialize();
     // MFS.initialize(&Timer1);  // initialize multifunction shield library
     MFS.initialize();  // initialize multifunction shield library
-    MFS.write(0);
-    Serial.println("== Multi Function Shield ready");
+    Serial.println("");
+    Serial.println("Parameters:");Serial.println("");
+    Serial.print("MAX_ANGLE: ");  Serial.println(MAX_ANGLE);
+    Serial.print("MIN_ANGLE: ");  Serial.println(MIN_ANGLE);
+    Serial.print("INIT DELAY: "); Serial.println(servo_delay);
+    Serial.println("");
+    Serial.println("=== Multi Function Shield ready ===");
 }
 
 bool toggle;
@@ -80,8 +89,19 @@ void servoLoop() {
     }
 }
 
+void logLoop() {
+    static uint_fast32_t timeStamp = 0;
+    if (millis() - timeStamp > 500) {
+        timeStamp = millis();
+        Serial.print("angle: "); Serial.print(pos);
+        Serial.print(" delay: "); Serial.println(servo_delay);
+    }
+}
+
 void loop() {
-    if (!stop) servoLoop();
-    byte btn = MFS.getButton();
-    checkButtons(btn);
+    if (!stop) {
+        servoLoop();
+        logLoop();
+    }
+    checkButtons();
 }
