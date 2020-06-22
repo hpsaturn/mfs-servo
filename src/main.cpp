@@ -11,21 +11,21 @@
 #include <Servo.h>
 #include <Wire.h>
 
-Servo mservo6;
-Servo mservo9;
+Servo mservo_pin6;
+Servo mservo_pin9;
 
-#define MAX_ANGLE 175
-#define MIN_ANGLE 20
+#define MAX_ANGLE 180
+#define MIN_ANGLE 0
 
-int pos = MIN_ANGLE;
+uint16_t pos = MIN_ANGLE;
 bool stop = true;
-int servo_delay = 45;
+uint16_t servo_delay = 45;
 
 void display(int value) {
     MFS.write(value);
 }
 
-void checkButtons() {
+void mfsLoop() {
 
     byte btn = MFS.getButton();
     MFS.manualDisplayRefresh();
@@ -33,9 +33,10 @@ void checkButtons() {
 
     if (btn == BUTTON_1_PRESSED || btn == BUTTON_1_LONG_PRESSED) {
         Serial.print("==> btn stop: ");
-        MFS.beep(3, 4, 3, 3); 
         stop = !stop;
         Serial.println(stop);
+        if (stop) MFS.beep(3, 4, 3, 3); 
+        else MFS.beep(1, 1, 3, 3, 1); 
         delay(100);
     } else if (btn == BUTTON_2_PRESSED || btn == BUTTON_2_LONG_PRESSED) {
         Serial.print("==> btn- delay: ");
@@ -59,8 +60,8 @@ void setup() {
     Serial.println("====== SERVO MFS TESTER  =======");
     Serial.println("================================");
 
-    mservo6.attach(6);
-    mservo9.attach(9);
+    mservo_pin6.attach(6);
+    mservo_pin9.attach(9);
 
     // Timer1.initialize();
     // MFS.initialize(&Timer1);  // initialize multifunction shield library
@@ -81,8 +82,8 @@ void servoLoop() {
     if (millis() - timeStamp > servo_delay) {
         timeStamp = millis();
         // in steps of 1 degree
-        mservo6.write(pos);  // tell servo to go to position in variable 'pos'
-        mservo9.write(pos);  // tell servo to go to position in variable 'pos'
+        mservo_pin6.write(pos);  // tell servo to go to position in variable 'pos'
+        mservo_pin9.write(pos);  // tell servo to go to position in variable 'pos'
         if (pos == MAX_ANGLE || pos == MIN_ANGLE) toggle = !toggle;
         if (toggle) pos++;
         else pos--;
@@ -103,5 +104,5 @@ void loop() {
         servoLoop();
         logLoop();
     }
-    checkButtons();
+    mfsLoop();
 }
