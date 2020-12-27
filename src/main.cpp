@@ -14,8 +14,8 @@
 Servo mservo_pin6;
 Servo mservo_pin9;
 
-#define MAX_ANGLE 180
-#define MIN_ANGLE 0
+#define MAX_ANGLE 150
+#define MIN_ANGLE 20
 
 uint16_t pos = MIN_ANGLE;
 bool stop = true;
